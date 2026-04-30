@@ -4,8 +4,11 @@ import (
 	"log"
 
 	"github.com/NatalyaAsh/ads-platform/services/auth-user/internal/repository"
+	"github.com/NatalyaAsh/ads-platform/services/auth-user/internal/server"
+	"github.com/NatalyaAsh/ads-platform/services/auth-user/internal/service"
 	"github.com/NatalyaAsh/ads-platform/services/auth-user/pkg/config"
 	"github.com/NatalyaAsh/ads-platform/services/auth-user/pkg/db"
+	"github.com/NatalyaAsh/ads-platform/services/auth-user/pkg/jwt"
 )
 
 func main() {
@@ -41,14 +44,22 @@ func main() {
 
 	log.Println("Database connected successfully")
 
-	// 4. Здесь позже будут:
-	// - Создание репозиториев
-	// - Создание сервисного слоя
-	// - Создание gRPC хендлеров
-	// - Запуск gRPC сервера
+	// 4. Создаём репозитории
+	userRepo := repository.NewUserRepository(gormDB)
+	refreshRepo := repository.NewRefreshTokenRepository(gormDB)
+
+	// 5. Создаём JWT менеджер
+	jwtManager := jwt.NewJWTManager(&cfg.JWT)
+
+	// 6. Создаём сервис
+	authService := service.NewAuthService(userRepo, refreshRepo, jwtManager)
 
 	log.Println("Auth-user service initialized successfully")
 
-	// Временная заглушка, чтобы сервис не завершался
-	select {}
+	// 7. Запускаем gRPC сервер
+	log.Printf("Starting gRPC server on port %s", cfg.Server.Port)
+	if err := server.RunGRPCServer(cfg.Server.Port, authService); err != nil {
+		log.Fatalf("Failed to start gRPC server: %v", err)
+	}
+
 }

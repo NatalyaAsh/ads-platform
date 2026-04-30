@@ -134,7 +134,7 @@ func Load() (*Config, error) {
 	// Загружаем конфигурацию сервиса
 	cfg.Service = ServiceConfig{
 		Name:        getEnv("SERVICE_NAME", "auth-user-service"),
-		Environment: getEnv("ENVIRONMENT", "dev"),
+		Environment: getEnv("ENV", "dev"),
 		Version:     getEnv("SERVICE_VERSION", "1.0.0"),
 		EnableTLS:   getEnvBool("ENABLE_TLS", false),
 		CertFile:    getEnv("TLS_CERT_FILE", ""),

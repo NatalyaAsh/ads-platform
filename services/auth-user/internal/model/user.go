@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"regexp"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 // Role - тип для ролей пользователя
@@ -90,11 +92,11 @@ func (u *User) IsActive() bool {
 }
 
 // BeforeCreate - GORM хук, вызываемый перед созданием записи
-func (u *User) BeforeCreate() error {
+func (u *User) BeforeCreate(tx *gorm.DB) error {
 	return u.Validate()
 }
 
 // BeforeUpdate - GORM хук, вызываемый перед обновлением
-func (u *User) BeforeUpdate() error {
+func (u *User) BeforeUpdate(tx *gorm.DB) error {
 	return u.Validate()
 }

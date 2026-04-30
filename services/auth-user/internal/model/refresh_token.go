@@ -3,6 +3,8 @@ package model
 import (
 	"errors"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 // RefreshToken - модель refresh токена
@@ -48,7 +50,7 @@ func (rt *RefreshToken) IsValid() bool {
 }
 
 // BeforeCreate - GORM хук перед созданием
-func (rt *RefreshToken) BeforeCreate() error {
+func (rt *RefreshToken) BeforeCreate(tx *gorm.DB) error {
 	return rt.Validate()
 }
 

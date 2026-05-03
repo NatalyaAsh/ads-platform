@@ -4,3 +4,6 @@ docker run --name test-postgres \
   -e POSTGRES_DB=auth_user_db \
   -p 5432:5432 \
   -d postgres:15
+
+  # создаём и запускаем контейнер PosgreSQL и сразу создаем БД  
+# В теории один первый раз

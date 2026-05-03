@@ -1,4 +1,4 @@
-docker start test-postgres
+docker start ad-postgres
 
 # запускаем уже созданный контейнер
 # docker start <контейнер> - запуск ранее созданного

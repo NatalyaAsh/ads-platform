@@ -1,0 +1,85 @@
+version: "3.8"
+
+services:
+  # PostgreSQL для auth-user сервиса
+  auth-postgres:
+    image: postgres:15
+    container_name: test-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: auth_user_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - auth_postgres_data:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - ads-network
+
+  # PostgreSQL для ad-search сервиса
+  ad-postgres:
+    image: postgres:15
+    container_name: ad-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ad_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - ad_postgres_data:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - ads-network
+
+  # MongoDB для ad-search сервиса (медиа-файлы)
+  ad-mongodb:
+    image: mongo:6
+    container_name: ad-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - ad_mongodb_data:/data/db
+    restart: always
+    networks:
+      - ads-network
+  # RabbitMQ для событий (опционально, пока закомментируем)
+  # rabbitmq:
+  #   image: rabbitmq:3-management
+  #   container_name: ad-rabbitmq
+  #   ports:
+  #     - "5672:5672"
+  #     - "15672:15672"
+  #   environment:
+  #     RABBITMQ_DEFAULT_USER: guest
+  #     RABBITMQ_DEFAULT_PASS: guest
+  #   restart: always
+  #   networks:
+  #     - ads-network
+
+  # Elasticsearch для поиска (опционально, пока закомментируем)
+  # elasticsearch:
+  #   image: elasticsearch:8.11.0
+  #   container_name: ad-elasticsearch
+  #   environment:
+  #     - discovery.type=single-node
+  #     - xpack.security.enabled=false
+  #   ports:
+  #     - "9200:9200"
+  #     - "9300:9300"
+  #   volumes:
+  #     - ad_elasticsearch_data:/usr/share/elasticsearch/data
+  #   restart: always
+  #   networks:
+  #     - ads-network
+
+volumes:
+  auth_postgres_data:
+  ad_postgres_data:
+  ad_mongodb_data:
+    # ad_elasticsearch_data:
+
+networks:
+  ads-network:
+    driver: bridge

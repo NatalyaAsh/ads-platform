@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/NatalyaAsh/ads-platform/services/ad-search/internal/repository"
@@ -30,6 +31,18 @@ func main() {
 	defer repository.CloseDB(gormDB)
 
 	log.Println("Ad-search service initialized successfully")
+
+	// Подключение к MongoDB
+	mongoClient, err := repository.NewMongoClient(cfg.MongoDB.URI)
+	if err != nil {
+		log.Fatalf("Failed to connect to MongoDB: %v", err)
+	}
+	defer mongoClient.Disconnect(context.Background())
+
+	mongoDB := mongoClient.Database(cfg.MongoDB.Database)
+	mediaRepo := repository.NewMediaRepository(mongoDB)
+	log.Printf("Media repository initialized")
+	_ = mediaRepo // временно игнорируем
 
 	// Пока заглушка
 	select {}

@@ -32,6 +32,18 @@ type Ad struct {
 	Category Category `gorm:"foreignKey:CategoryID" json:"category,omitempty"`
 }
 
+type AdListFilters struct {
+	CategoryID uint
+	UserID     uint
+	Status     string
+	MinPrice   *float64 // указатель, чтобы можно было отличить 0 от "не задано"
+	MaxPrice   *float64
+	SortBy     string // поле для сортировки (created_at, price, views)
+	SortOrder  string // asc или desc
+	Limit      int
+	Offset     int
+}
+
 func (Ad) TableName() string {
 	return "ads"
 }

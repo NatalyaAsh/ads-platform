@@ -32,12 +32,13 @@ Gateway поддерживает следующие типы запросов.
 |ad|Получить объявление по ID|id: ID!|
 |categories|Список всех категорий|–|
 ### Mutation
-Поле	Описание	Аргументы
-register	Регистрация пользователя	email: String!, password: String!
-login	Вход в систему	email: String!, password: String!
-createAd	Создать объявление (требуется авторизация)	input: CreateAdInput!
-updateAd	Обновить объявление (требуется авторизация)	id: ID!, input: UpdateAdInput!
-deleteAd	Удалить объявление (требуется авторизация)	id: ID!
+|Поле|Описание|Аргументы|
+|-|-|-|
+|register|Регистрация пользователя|email: String!, password: String!|
+|login|Вход в систему|email: String!, password: String!|
+|createAd|Создать объявление (требуется авторизация)|input: CreateAdInput!|
+|updateAd|Обновить объявление (требуется авторизация)|id: ID!, input: UpdateAdInput!|
+|deleteAd|Удалить объявление (требуется авторизация)|id: ID!|
 ### Входные типы
 ```bash
 input CreateAdInput {
@@ -202,17 +203,18 @@ make up
 - MongoDB (для Ad, поднимается через Compose)
 
 ## ✅ Статус
-Компонент	Статус
-GraphQL схема	✅
-Query ad	✅
-Query categories	✅
-Mutation register	✅
-Mutation login	✅
-Mutation createAd	✅ (с авторизацией)
-Mutation updateAd	✅ (с авторизацией)
-Mutation deleteAd	✅ (с авторизацией)
-Авторизация JWT	✅
-gRPC клиенты	✅
+|Компонент|Статус|
+|-|-|
+|GraphQL схема|✅|
+|Query ad|✅|
+|Query categories|✅|
+|Mutation register|✅|
+|Mutation login|✅|
+|Mutation createAd|✅ (с авторизацией)|
+|Mutation updateAd|✅ (с авторизацией)|
+|Mutation deleteAd|✅ (с авторизацией)|
+|Авторизация JWT|✅|
+|gRPC клиенты|✅|
 
 ## 📝 TODO
 - Добавить пагинацию в ads query

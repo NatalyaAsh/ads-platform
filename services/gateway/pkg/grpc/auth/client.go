@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	authv1 "github.com/NatalyaAsh/ads-platform/services/gateway/proto_gen/auth_user/v1"
+	authv1 "github.com/NatalyaAsh/ads-platform/services/gateway/internal/pb/auth"
 )
 
 type Client struct {

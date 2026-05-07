@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/graphql-go/graphql"
@@ -21,7 +23,6 @@ var authClient *auth.Client
 func init() {
 	var err error
 
-	// Подключаемся к Ad Search Service
 	adAddr := os.Getenv("AD_SERVICE_ADDR")
 	if adAddr == "" {
 		adAddr = "localhost:50052"
@@ -31,7 +32,6 @@ func init() {
 		log.Fatalf("Failed to connect to ad service: %v", err)
 	}
 
-	// Подключаемся к Auth Service
 	authAddr := os.Getenv("AUTH_SERVICE_ADDR")
 	if authAddr == "" {
 		authAddr = "localhost:50051"
@@ -42,12 +42,40 @@ func init() {
 	}
 }
 
+// Middleware для извлечения токена из заголовка Authorization
+func withAuth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authHeader := r.Header.Get("Authorization")
+		token := ""
+		if authHeader != "" && strings.HasPrefix(authHeader, "Bearer ") {
+			token = strings.TrimPrefix(authHeader, "Bearer ")
+		}
+		ctx := context.WithValue(r.Context(), "token", token)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+// Вспомогательная функция для получения userID из токена
+func getUserIDFromContext(ctx context.Context) (uint32, error) {
+	token, ok := ctx.Value("token").(string)
+	if !ok || token == "" {
+		return 0, fmt.Errorf("missing or empty token")
+	}
+	resp, err := authClient.ValidateToken(ctx, token)
+	if err != nil {
+		return 0, fmt.Errorf("token validation failed: %w", err)
+	}
+	if !resp.Valid {
+		return 0, fmt.Errorf("invalid token")
+	}
+	return resp.UserId, nil
+}
+
 func main() {
-	// Закрываем соединения при завершении
 	defer adClient.Close()
 	defer authClient.Close()
 
-	// Тип Category
+	// ========== ТИПЫ ==========
 	categoryType := graphql.NewObject(graphql.ObjectConfig{
 		Name: "Category",
 		Fields: graphql.Fields{
@@ -57,7 +85,6 @@ func main() {
 		},
 	})
 
-	// Тип Ad
 	adType := graphql.NewObject(graphql.ObjectConfig{
 		Name: "Ad",
 		Fields: graphql.Fields{
@@ -74,15 +101,8 @@ func main() {
 			"category": &graphql.Field{
 				Type: categoryType,
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					ad, ok := p.Source.(map[string]interface{})
-					if !ok {
-						return nil, nil
-					}
-					categoryID, ok := ad["categoryId"].(string)
-					if !ok {
-						return nil, nil
-					}
-					// Заглушка — реальную категорию можно подгрузить отдельным запросом
+					ad, _ := p.Source.(map[string]interface{})
+					categoryID, _ := ad["categoryId"].(string)
 					return map[string]interface{}{
 						"id":   categoryID,
 						"name": "Category",
@@ -93,7 +113,6 @@ func main() {
 		},
 	})
 
-	// Тип AuthPayload
 	authPayloadType := graphql.NewObject(graphql.ObjectConfig{
 		Name: "AuthPayload",
 		Fields: graphql.Fields{
@@ -104,7 +123,27 @@ func main() {
 		},
 	})
 
-	// Query
+	createAdInputType := graphql.NewInputObject(graphql.InputObjectConfig{
+		Name: "CreateAdInput",
+		Fields: graphql.InputObjectConfigFieldMap{
+			"title":       &graphql.InputObjectFieldConfig{Type: graphql.NewNonNull(graphql.String)},
+			"description": &graphql.InputObjectFieldConfig{Type: graphql.String},
+			"price":       &graphql.InputObjectFieldConfig{Type: graphql.NewNonNull(graphql.Float)},
+			"categoryId":  &graphql.InputObjectFieldConfig{Type: graphql.NewNonNull(graphql.ID)},
+		},
+	})
+
+	updateAdInputType := graphql.NewInputObject(graphql.InputObjectConfig{
+		Name: "UpdateAdInput",
+		Fields: graphql.InputObjectConfigFieldMap{
+			"title":       &graphql.InputObjectFieldConfig{Type: graphql.NewNonNull(graphql.String)},
+			"description": &graphql.InputObjectFieldConfig{Type: graphql.String},
+			"price":       &graphql.InputObjectFieldConfig{Type: graphql.NewNonNull(graphql.Float)},
+			"categoryId":  &graphql.InputObjectFieldConfig{Type: graphql.NewNonNull(graphql.ID)},
+		},
+	})
+
+	// ========== QUERY ==========
 	queryType := graphql.NewObject(graphql.ObjectConfig{
 		Name: "Query",
 		Fields: graphql.Fields{
@@ -115,22 +154,7 @@ func main() {
 				},
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					id := p.Args["id"].(string)
-					resp, err := adClient.GetAd(context.Background(), id)
-					if err != nil {
-						return nil, err
-					}
-					return map[string]interface{}{
-						"id":          resp.Id,
-						"title":       resp.Title,
-						"description": resp.Description,
-						"price":       resp.Price,
-						"userId":      resp.UserId,
-						"categoryId":  resp.CategoryId,
-						"status":      resp.Status,
-						"views":       resp.Views,
-						"createdAt":   resp.CreatedAt,
-						"updatedAt":   resp.UpdatedAt,
-					}, nil
+					return adClient.GetAd(context.Background(), id)
 				},
 			},
 			"categories": &graphql.Field{
@@ -140,21 +164,21 @@ func main() {
 					if err != nil {
 						return nil, err
 					}
-					var categories []interface{}
+					var out []interface{}
 					for _, cat := range resp.Categories {
-						categories = append(categories, map[string]interface{}{
+						out = append(out, map[string]interface{}{
 							"id":   cat.Id,
 							"name": cat.Name,
 							"slug": cat.Slug,
 						})
 					}
-					return categories, nil
+					return out, nil
 				},
 			},
 		},
 	})
 
-	// Mutation
+	// ========== MUTATION ==========
 	mutationType := graphql.NewObject(graphql.ObjectConfig{
 		Name: "Mutation",
 		Fields: graphql.Fields{
@@ -200,6 +224,93 @@ func main() {
 					}, nil
 				},
 			},
+			"createAd": &graphql.Field{
+				Type: adType,
+				Args: graphql.FieldConfigArgument{
+					"input": &graphql.ArgumentConfig{Type: graphql.NewNonNull(createAdInputType)},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					userID, err := getUserIDFromContext(p.Context)
+					if err != nil {
+						return nil, err
+					}
+					input := p.Args["input"].(map[string]interface{})
+					title := input["title"].(string)
+					description, _ := input["description"].(string)
+					price := input["price"].(float64)
+					categoryID := input["categoryId"].(string)
+
+					resp, err := adClient.CreateAd(context.Background(), title, description, price, fmt.Sprintf("%d", userID), categoryID)
+					if err != nil {
+						return nil, err
+					}
+					return map[string]interface{}{
+						"id":          resp.Id,
+						"title":       resp.Title,
+						"description": resp.Description,
+						"price":       resp.Price,
+						"userId":      resp.UserId,
+						"categoryId":  resp.CategoryId,
+						"status":      resp.Status,
+						"views":       resp.Views,
+						"createdAt":   resp.CreatedAt,
+						"updatedAt":   resp.UpdatedAt,
+					}, nil
+				},
+			},
+			"updateAd": &graphql.Field{
+				Type: adType,
+				Args: graphql.FieldConfigArgument{
+					"id":    &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.ID)},
+					"input": &graphql.ArgumentConfig{Type: graphql.NewNonNull(updateAdInputType)},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					//userID, err := getUserIDFromContext(p.Context)
+					_, err := getUserIDFromContext(p.Context)
+					if err != nil {
+						return nil, err
+					}
+					id := p.Args["id"].(string)
+					input := p.Args["input"].(map[string]interface{})
+					title := input["title"].(string)
+					description, _ := input["description"].(string)
+					price := input["price"].(float64)
+					categoryID := input["categoryId"].(string)
+
+					// Вызов gRPC метода UpdateAd (требует прав: владелец или админ)
+					// Для простоты пока не проверяем права, но можно передать userID и проверить внутри сервиса
+					resp, err := adClient.UpdateAd(context.Background(), id, title, description, price, categoryID)
+					if err != nil {
+						return nil, err
+					}
+					return map[string]interface{}{
+						"id":          resp.Id,
+						"title":       resp.Title,
+						"description": resp.Description,
+						"price":       resp.Price,
+						"userId":      resp.UserId,
+						"categoryId":  resp.CategoryId,
+						"status":      resp.Status,
+						"views":       resp.Views,
+						"updatedAt":   resp.UpdatedAt,
+					}, nil
+				},
+			},
+			"deleteAd": &graphql.Field{
+				Type: graphql.Boolean,
+				Args: graphql.FieldConfigArgument{
+					"id": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.ID)},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					_, err := getUserIDFromContext(p.Context) // проверяем авторизацию
+					if err != nil {
+						return false, err
+					}
+					id := p.Args["id"].(string)
+					_, err = adClient.DeleteAd(context.Background(), id)
+					return err == nil, err
+				},
+			},
 		},
 	})
 
@@ -212,14 +323,14 @@ func main() {
 		log.Fatalf("Failed to create schema: %v", err)
 	}
 
-	// HTTP хендлер
 	h := handler.New(&handler.Config{
 		Schema:   &schema,
 		Pretty:   true,
 		GraphiQL: true,
 	})
 
-	http.Handle("/graphql", h)
+	// Применяем middleware для извлечения токена
+	http.Handle("/graphql", withAuth(h))
 
 	// Graceful shutdown
 	go func() {
@@ -232,6 +343,5 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-
 	log.Println("Shutting down gateway...")
 }

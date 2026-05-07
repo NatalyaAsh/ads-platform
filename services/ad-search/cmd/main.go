@@ -5,6 +5,8 @@ import (
 	"log"
 
 	"github.com/NatalyaAsh/ads-platform/services/ad-search/internal/repository"
+	"github.com/NatalyaAsh/ads-platform/services/ad-search/internal/server"
+	"github.com/NatalyaAsh/ads-platform/services/ad-search/internal/service"
 	"github.com/NatalyaAsh/ads-platform/services/ad-search/pkg/config"
 	"github.com/NatalyaAsh/ads-platform/services/ad-search/pkg/db"
 )
@@ -23,7 +25,7 @@ func main() {
 		log.Fatalf("Migrations failed: %v", err)
 	}
 
-	// Подключение к БД
+	// Подключение к PostgreSQL
 	gormDB, err := repository.NewPostgresDB(&cfg.Database)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
@@ -40,10 +42,22 @@ func main() {
 	defer mongoClient.Disconnect(context.Background())
 
 	mongoDB := mongoClient.Database(cfg.MongoDB.Database)
-	mediaRepo := repository.NewMediaRepository(mongoDB)
-	log.Printf("Media repository initialized")
-	_ = mediaRepo // временно игнорируем
 
-	// Пока заглушка
-	select {}
+	// Создание репозиториев
+	adRepo := repository.NewAdRepository(gormDB)
+	categoryRepo := repository.NewCategoryRepository(gormDB)
+	mediaRepo := repository.NewMediaRepository(mongoDB)
+
+	// Создание сервиса
+	adService := service.NewAdService(adRepo, categoryRepo, mediaRepo)
+	_ = adService
+	log.Println("Ad-service initialized")
+
+	log.Println("Ad-search service initialized successfully")
+
+	// Запуск gRPC сервера
+	log.Printf("Starting gRPC server on port %s", cfg.Server.Port)
+	if err := server.RunGRPCServer(cfg.Server.Port, adService); err != nil {
+		log.Fatalf("Failed to start gRPC server: %v", err)
+	}
 }

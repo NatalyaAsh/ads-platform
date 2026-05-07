@@ -22,17 +22,19 @@ func NewMediaRepository(db *mongo.Database) *MediaRepository {
 	}
 }
 
+// Create сохраняет метаданные файла
 func (r *MediaRepository) Create(ctx context.Context, media *model.AdMedia) error {
-	media.CreatedAt = time.Now()
 	media.ID = primitive.NewObjectID()
+	media.CreatedAt = time.Now()
 
 	_, err := r.collection.InsertOne(ctx, media)
 	if err != nil {
-		return fmt.Errorf("failed to create media: %w", err)
+		return fmt.Errorf("failed to create media metadata: %w", err)
 	}
 	return nil
 }
 
+// FindByAdID возвращает все метаданные файлов объявления
 func (r *MediaRepository) FindByAdID(ctx context.Context, adID uint) ([]model.AdMedia, error) {
 	filter := bson.M{"ad_id": adID}
 	cursor, err := r.collection.Find(ctx, filter)
@@ -48,15 +50,17 @@ func (r *MediaRepository) FindByAdID(ctx context.Context, adID uint) ([]model.Ad
 	return media, nil
 }
 
+// DeleteByAdID удаляет все метаданные файлов объявления
 func (r *MediaRepository) DeleteByAdID(ctx context.Context, adID uint) error {
 	filter := bson.M{"ad_id": adID}
 	_, err := r.collection.DeleteMany(ctx, filter)
 	if err != nil {
-		return fmt.Errorf("failed to delete media: %w", err)
+		return fmt.Errorf("failed to delete media metadata: %w", err)
 	}
 	return nil
 }
 
+// DeleteByID удаляет метаданные одного файла по ID
 func (r *MediaRepository) DeleteByID(ctx context.Context, id string) error {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {

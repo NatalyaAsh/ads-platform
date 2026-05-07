@@ -41,7 +41,10 @@ func TestAdService_CreateAd(t *testing.T) {
 
 	adRepo := repository.NewAdRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
-	adService := NewAdService(adRepo, categoryRepo)
+	//adService := NewAdService(adRepo, categoryRepo)
+	// ⚠️ ВРЕМЕННО: для тестов передаём nil (пока не нужен)
+	mediaRepo := (*repository.MediaRepository)(nil)
+	adService := NewAdService(adRepo, categoryRepo, mediaRepo)
 
 	// Создаём тестовую категорию
 	category := createTestCategory(t, db)
@@ -189,7 +192,10 @@ func TestAdService_GetAdByID(t *testing.T) {
 
 	adRepo := repository.NewAdRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
-	adService := NewAdService(adRepo, categoryRepo)
+	//adService := NewAdService(adRepo, categoryRepo)
+	// ⚠️ ВРЕМЕННО: для тестов передаём nil (пока не нужен)
+	mediaRepo := (*repository.MediaRepository)(nil)
+	adService := NewAdService(adRepo, categoryRepo, mediaRepo)
 
 	// Создаём категорию
 	category := createTestCategory(t, db)
@@ -260,7 +266,10 @@ func TestAdService_GetUserAds(t *testing.T) {
 
 	adRepo := repository.NewAdRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
-	adService := NewAdService(adRepo, categoryRepo)
+	//adService := NewAdService(adRepo, categoryRepo)
+	// ⚠️ ВРЕМЕННО: для тестов передаём nil (пока не нужен)
+	mediaRepo := (*repository.MediaRepository)(nil)
+	adService := NewAdService(adRepo, categoryRepo, mediaRepo)
 
 	// Создаём категорию
 	category := createTestCategory(t, db)
@@ -370,7 +379,10 @@ func TestAdService_UpdateAd(t *testing.T) {
 
 	adRepo := repository.NewAdRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
-	adService := NewAdService(adRepo, categoryRepo)
+	//adService := NewAdService(adRepo, categoryRepo)
+	// ⚠️ ВРЕМЕННО: для тестов передаём nil (пока не нужен)
+	mediaRepo := (*repository.MediaRepository)(nil)
+	adService := NewAdService(adRepo, categoryRepo, mediaRepo)
 
 	// Создаём категории
 	category1 := createTestCategory(t, db)
@@ -528,7 +540,9 @@ func TestAdService_DeleteAd(t *testing.T) {
 
 	adRepo := repository.NewAdRepository(db)
 	categoryRepo := repository.NewCategoryRepository(db)
-	adService := NewAdService(adRepo, categoryRepo)
+	// ⚠️ ВРЕМЕННО: для тестов передаём nil (пока не нужен для удаления)
+	mediaRepo := (*repository.MediaRepository)(nil)
+	adService := NewAdService(adRepo, categoryRepo, mediaRepo)
 
 	// Создаём категорию
 	category := createTestCategory(t, db)

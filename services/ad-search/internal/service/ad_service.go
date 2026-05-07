@@ -1,8 +1,11 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"os"
+	"time"
 
 	"github.com/NatalyaAsh/ads-platform/services/ad-search/internal/model"
 	"github.com/NatalyaAsh/ads-platform/services/ad-search/internal/repository"
@@ -11,15 +14,18 @@ import (
 type AdService struct {
 	adRepo       *repository.AdRepository
 	categoryRepo *repository.CategoryRepository
+	mediaRepo    *repository.MediaRepository
 }
 
 func NewAdService(
 	adRepo *repository.AdRepository,
 	categoryRepo *repository.CategoryRepository,
+	mediaRepo *repository.MediaRepository,
 ) *AdService {
 	return &AdService{
 		adRepo:       adRepo,
 		categoryRepo: categoryRepo,
+		mediaRepo:    mediaRepo,
 	}
 }
 
@@ -139,4 +145,54 @@ func (s *AdService) DeleteAd(id uint) error {
 		return model.ErrAdNotFound
 	}
 	return nil
+}
+
+// UploadMedia загружает файл на диск и сохраняет метаданные
+func (s *AdService) UploadMedia(ctx context.Context, adID uint, fileData []byte, fileName, mimeType string, isPrimary bool) (*model.AdMedia, error) {
+	// 1. Создаём папку для объявления
+	uploadDir := fmt.Sprintf("uploads/ads/%d", adID)
+	if err := os.MkdirAll(uploadDir, 0755); err != nil {
+		return nil, fmt.Errorf("failed to create directory: %w", err)
+	}
+
+	// 2. Сохраняем файл на диск
+	uniqueName := fmt.Sprintf("%d_%s", time.Now().UnixNano(), fileName)
+	filePath := fmt.Sprintf("%s/%s", uploadDir, uniqueName)
+
+	if err := os.WriteFile(filePath, fileData, 0644); err != nil {
+		return nil, fmt.Errorf("failed to save file: %w", err)
+	}
+
+	// 3. Сохраняем метаданные в MongoDB
+	media := &model.AdMedia{
+		AdID:      adID,
+		FilePath:  filePath,
+		FileName:  fileName,
+		FileSize:  int64(len(fileData)),
+		MimeType:  mimeType,
+		IsPrimary: isPrimary,
+	}
+
+	if err := s.mediaRepo.Create(ctx, media); err != nil {
+		// Если ошибка, удаляем файл
+		os.Remove(filePath)
+		return nil, err
+	}
+
+	return media, nil
+}
+
+// ListAds возвращает список объявлений с фильтрацией
+func (s *AdService) ListAds(filters model.AdListFilters) ([]model.Ad, int64, error) {
+	return s.adRepo.List(filters)
+}
+
+// ListCategories возвращает все категории
+func (s *AdService) ListCategories() ([]model.Category, error) {
+	return s.categoryRepo.List()
+}
+
+// GetCategoryByID возвращает категорию по ID
+func (s *AdService) GetCategoryByID(id uint) (*model.Category, error) {
+	return s.categoryRepo.FindByID(id)
 }

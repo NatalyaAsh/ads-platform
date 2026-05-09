@@ -20,6 +20,21 @@ import (
 var adClient *ad.Client
 var authClient *auth.Client
 
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func init() {
 	var err error
 
@@ -175,6 +190,54 @@ func main() {
 					return out, nil
 				},
 			},
+			"userAds": &graphql.Field{
+				Type: graphql.NewList(adType),
+				Args: graphql.FieldConfigArgument{
+					"userId": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.ID)},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					userID := p.Args["userId"].(string)
+					ads, err := adClient.GetUserAds(context.Background(), userID)
+					if err != nil {
+						return nil, err
+					}
+					var result []interface{}
+					for _, ad := range ads {
+						result = append(result, map[string]interface{}{
+							"id":          ad.Id,
+							"title":       ad.Title,
+							"description": ad.Description,
+							"price":       ad.Price,
+							"userId":      ad.UserId,
+							"categoryId":  ad.CategoryId,
+							"status":      ad.Status,
+							"views":       ad.Views,
+							"createdAt":   ad.CreatedAt,
+							"updatedAt":   ad.UpdatedAt,
+						})
+					}
+					return result, nil
+				},
+			},
+			"ads": &graphql.Field{
+				Type: graphql.NewList(adType),
+				Args: graphql.FieldConfigArgument{
+					"limit":  &graphql.ArgumentConfig{Type: graphql.Int},
+					"offset": &graphql.ArgumentConfig{Type: graphql.Int},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					limit, _ := p.Args["limit"].(int)
+					offset, _ := p.Args["offset"].(int)
+					if limit == 0 {
+						limit = 20
+					}
+					ads, err := adClient.ListAds(context.Background(), int32(limit), int32(offset))
+					if err != nil {
+						return nil, err
+					}
+					return ads, nil
+				},
+			},
 		},
 	})
 
@@ -231,6 +294,7 @@ func main() {
 				},
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					userID, err := getUserIDFromContext(p.Context)
+					log.Printf("🔍 Создаём объявление от userId = %d", userID)
 					if err != nil {
 						return nil, err
 					}
@@ -329,8 +393,10 @@ func main() {
 		GraphiQL: true,
 	})
 
-	// Применяем middleware для извлечения токена
-	http.Handle("/graphql", withAuth(h))
+	// // Применяем middleware для извлечения токена
+	// http.Handle("/graphql", withAuth(h))
+	// Оборачиваем в CORS и авторизацию
+	http.Handle("/graphql", corsMiddleware(withAuth(h)))
 
 	// Graceful shutdown
 	go func() {

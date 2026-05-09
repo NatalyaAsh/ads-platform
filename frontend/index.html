@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ads Board</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body class="bg-gray-100">
+<div id="app">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <h1 class="text-2xl font-bold text-indigo-600">📦 Ads Board</h1>
+                <div class="flex gap-4 items-center">
+                    <template v-if="!token">
+                        <button @click="showLogin = true" class="text-gray-600 hover:text-indigo-600">Вход</button>
+                        <button @click="showRegister = true" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">Регистрация</button>
+                    </template>
+                    <template v-else>
+                        <span class="text-gray-600">Привет, {{ userEmail }}</span>
+                        <button @click="logout" class="text-red-500 hover:text-red-700">Выйти</button>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Модалки логина/регистрации -->
+        <div v-if="showLogin" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-8 w-96">
+                <h2 class="text-2xl font-bold mb-4">Вход</h2>
+                <input v-model="loginForm.email" type="email" placeholder="Email" class="w-full p-2 border rounded mb-3">
+                <input v-model="loginForm.password" type="password" placeholder="Пароль" class="w-full p-2 border rounded mb-4">
+                <div class="flex justify-end gap-2">
+                    <button @click="showLogin = false" class="px-4 py-2 text-gray-600">Отмена</button>
+                    <button @click="login" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Войти</button>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="showRegister" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-8 w-96">
+                <h2 class="text-2xl font-bold mb-4">Регистрация</h2>
+                <input v-model="registerForm.email" type="email" placeholder="Email" class="w-full p-2 border rounded mb-3">
+                <input v-model="registerForm.password" type="password" placeholder="Пароль" class="w-full p-2 border rounded mb-4">
+                <div class="flex justify-end gap-2">
+                    <button @click="showRegister = false" class="px-4 py-2 text-gray-600">Отмена</button>
+                    <button @click="register" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Зарегистрироваться</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Основное меню -->
+        <div v-if="token">
+            <div class="flex gap-4 mb-6 border-b pb-4">
+                <button @click="activeTab = 'my'" :class="activeTab === 'my' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500'" class="px-4 py-2 font-medium">Мои объявления</button>
+                <button @click="activeTab = 'all'" :class="activeTab === 'all' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500'" class="px-4 py-2 font-medium">Все объявления</button>
+                <button @click="activeTab = 'create'" :class="activeTab === 'create' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500'" class="px-4 py-2 font-medium">+ Создать</button>
+            </div>
+
+            <!-- Форма создания -->
+            <div v-if="activeTab === 'create'" class="bg-white p-6 rounded-lg shadow max-w-xl mx-auto">
+                <h2 class="text-2xl font-bold mb-6 text-center">📝 Новое объявление</h2>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-medium mb-1">Название</label>
+                    <input v-model="newAd.title" type="text" placeholder="Например: iPhone 14 Pro" class="w-full p-2 border rounded-lg">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-medium mb-1">Описание</label>
+                    <textarea v-model="newAd.description" placeholder="Кратко опишите товар..." class="w-full p-2 border rounded-lg" rows="3"></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-medium mb-1">Цена (₽)</label>
+                    <input v-model="newAd.price" type="number" placeholder="1000" class="w-full p-2 border rounded-lg">
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-medium mb-1">Категория</label>
+                    <select v-model="newAd.categoryId" class="w-full p-2 border rounded-lg bg-white">
+                        <option v-if="categoriesList.length === 0" value="" disabled>Загрузка категорий...</option>
+                        <option v-for="cat in categoriesList" :value="cat.id" :key="cat.id">
+                            {{ cat.name }}
+                        </option>
+                    </select>
+                </div>
+
+                <button @click="createAd" class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition">
+                    ➕ Опубликовать
+                </button>
+            </div>
+
+            <!-- Списки объявлений -->
+            <div v-if="activeTab === 'my' || activeTab === 'all'">
+                <div v-if="loading" class="text-center py-10">Загрузка...</div>
+                <div v-else class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div v-for="ad in currentAds" :key="ad.id" class="bg-white rounded-lg shadow overflow-hidden">
+                        <div class="p-4">
+                            <h3 class="font-bold text-lg mb-2">{{ ad.title }}</h3>
+                            <p class="text-gray-600 text-sm mb-2">{{ ad.description?.substring(0, 100) }}{{ ad.description?.length > 100 ? '...' : '' }}</p>
+                            <div class="flex justify-between items-center mt-3">
+                                <span class="text-xl font-bold text-indigo-600">{{ ad.price }} ₽</span>
+                                <div class="flex gap-2">
+                                    <button @click="openEditModal(ad)" class="text-blue-500 hover:text-blue-700 text-sm">✏️</button>
+                                    <button @click="confirmDelete(ad.id)" class="text-red-500 hover:text-red-700 text-sm">🗑️</button>
+                                </div>
+                                <span class="text-xs bg-gray-200 px-2 py-1 rounded">{{ ad.status }}</span>
+                            </div>
+                            <button @click="fetchAdDetails(ad.id)" class="mt-3 text-indigo-500 hover:text-indigo-700 text-sm">Подробнее</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Детали -->
+            <div v-if="selectedAd" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div class="bg-white rounded-lg p-6 w-96">
+                    <h3 class="text-xl font-bold mb-2">{{ selectedAd.title }}</h3>
+                    <p class="text-gray-600 mb-2">{{ selectedAd.description }}</p>
+                    <p class="text-2xl font-bold text-indigo-600 mb-2">{{ selectedAd.price }} ₽</p>
+                    <p class="text-sm text-gray-500">Статус: {{ selectedAd.status }}</p>
+                    <p class="text-sm text-gray-500">Просмотров: {{ selectedAd.views || 0 }}</p>
+                    <div class="flex justify-end mt-4">
+                        <button @click="selectedAd = null" class="px-4 py-2 bg-gray-200 rounded">Закрыть</button>
+                    </div>
+                </div>
+            </div>
+            <!-- Модалка редактирования -->
+            <div v-if="editingAd" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div class="bg-white rounded-lg p-6 w-96">
+                    <h3 class="text-xl font-bold mb-4">Редактировать объявление</h3>
+                    <input v-model="editForm.title" type="text" placeholder="Название" class="w-full p-2 border rounded mb-2">
+                    <textarea v-model="editForm.description" placeholder="Описание" class="w-full p-2 border rounded mb-2" rows="3"></textarea>
+                    <input v-model="editForm.price" type="number" placeholder="Цена" class="w-full p-2 border rounded mb-2">
+                    <select v-model="editForm.categoryId" class="w-full p-2 border rounded mb-4">
+                        <option v-for="cat in categoriesList" :value="cat.id" :key="cat.id">{{ cat.name }}</option>
+                    </select>
+                    <div class="flex justify-end gap-2">
+                        <button @click="editingAd = null" class="px-4 py-2 bg-gray-200 rounded">Отмена</button>
+                        <button @click="updateAd" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Сохранить</button>
+                    </div>
+                </div>
+            </div>            
+        </div>
+    </main>
+</div>
+
+<script>
+    const { createApp, ref, computed, onMounted } = Vue;
+
+    createApp({
+        setup() {
+            const token = ref(localStorage.getItem('token') || '');
+            const userEmail = ref(localStorage.getItem('userEmail') || '');
+            const userId = ref(localStorage.getItem('userId') || '');
+            const showLogin = ref(false);
+            const showRegister = ref(false);
+            const activeTab = ref('my');
+            const loading = ref(false);
+            const myAds = ref([]);
+            const allAds = ref([]);
+            const selectedAd = ref(null);
+            const editingAd = ref(null);
+            const editForm = ref({ id: null, title: '', description: '', price: 0, categoryId: '' });
+            const categoriesList = ref([]);
+
+            const loginForm = ref({ email: '', password: '' });
+            const registerForm = ref({ email: '', password: '' });
+            const newAd = ref({ title: '', description: '', price: 0, categoryId: '' });
+
+            const GQL_URL = 'http://localhost:8080/graphql';
+
+            const gqlRequest = async (query, variables = {}) => {
+                const headers = { 'Content-Type': 'application/json' };
+                if (token.value) headers['Authorization'] = `Bearer ${token.value}`;
+                const res = await fetch(GQL_URL, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({ query, variables })
+                });
+                const json = await res.json();
+                if (json.errors) throw new Error(json.errors[0].message);
+                return json.data;
+            };
+
+            const loadCategories = async () => {
+                const query = `{ categories { id name } }`;
+                try {
+                    const data = await gqlRequest(query);
+                    categoriesList.value = data.categories || [];
+                    if (categoriesList.value.length && !newAd.value.categoryId) {
+                        newAd.value.categoryId = categoriesList.value[0].id;
+                    }
+                } catch(e) {
+                    console.error('Не удалось загрузить категории', e);
+                }
+            };
+
+            const loadMyAds = async () => {
+                if (!userId.value) return;
+                loading.value = true;
+                try {
+                    const query = `{ userAds(userId: "${userId.value}") { id title description price status } }`;
+                    const data = await gqlRequest(query);
+                    myAds.value = data.userAds || [];
+                } catch(e) { console.error(e); }
+                finally { loading.value = false; }
+            };
+
+            const loadAllAds = async () => {
+                loading.value = true;
+                try {
+                    const query = `{ ads(limit: 50) { id title description price status } }`;
+                    const data = await gqlRequest(query);
+                    allAds.value = data.ads || [];
+                } catch(e) { console.error(e); }
+                finally { loading.value = false; }
+            };
+
+            const fetchAdDetails = async (id) => {
+                const query = `{ ad(id: "${id}") { id title description price status views } }`;
+                try {
+                    const data = await gqlRequest(query);
+                    selectedAd.value = data.ad;
+                } catch(e) { console.error(e); }
+            };
+
+            const createAd = async () => {
+                if (!newAd.value.title || !newAd.value.price || !newAd.value.categoryId) {
+                    alert('Заполните название, цену и выберите категорию');
+                    return;
+                }
+                const mutation = `
+                    mutation {
+                        createAd(input: {
+                            title: "${newAd.value.title.replace(/"/g, '\\"')}",
+                            description: "${newAd.value.description.replace(/"/g, '\\"')}",
+                            price: ${newAd.value.price},
+                            categoryId: "${newAd.value.categoryId}"
+                        }) {
+                            id title price userId
+                        }
+                    }
+                `;
+                try {
+                    await gqlRequest(mutation);
+                    alert('✅ Объявление создано!');
+                    newAd.value = { title: '', description: '', price: 0, categoryId: categoriesList.value[0]?.id || '' };
+                    await loadMyAds();
+                    await loadAllAds();
+                } catch(e) { alert('❌ Ошибка: ' + e.message); }
+            };
+
+            const login = async () => {
+                const mutation = `
+                    mutation {
+                        login(email: "${loginForm.value.email}", password: "${loginForm.value.password}") {
+                            accessToken
+                            userId
+                        }
+                    }
+                `;
+                try {
+                    const data = await gqlRequest(mutation);
+                    token.value = data.login.accessToken;
+                    userEmail.value = loginForm.value.email;
+                    userId.value = data.login.userId;
+                    localStorage.setItem('token', token.value);
+                    localStorage.setItem('userEmail', userEmail.value);
+                    localStorage.setItem('userId', userId.value);
+                    showLogin.value = false;
+                    loginForm.value = { email: '', password: '' };
+                    await loadCategories();
+                    await loadMyAds();
+                    await loadAllAds();
+                } catch(e) { alert('❌ Ошибка входа: ' + e.message); }
+            };
+
+            const register = async () => {
+                const mutation = `
+                    mutation {
+                        register(email: "${registerForm.value.email}", password: "${registerForm.value.password}") {
+                            accessToken
+                            userId
+                        }
+                    }
+                `;
+                try {
+                    const data = await gqlRequest(mutation);
+                    token.value = data.register.accessToken;
+                    userEmail.value = registerForm.value.email;
+                    userId.value = data.register.userId;
+                    localStorage.setItem('token', token.value);
+                    localStorage.setItem('userEmail', userEmail.value);
+                    localStorage.setItem('userId', userId.value);
+                    showRegister.value = false;
+                    registerForm.value = { email: '', password: '' };
+                    await loadCategories();
+                    await loadMyAds();
+                    await loadAllAds();
+                } catch(e) { alert('❌ Ошибка регистрации: ' + e.message); }
+            };
+
+            const logout = () => {
+                token.value = '';
+                userEmail.value = '';
+                userId.value = '';
+                localStorage.removeItem('token');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('userId');
+                myAds.value = [];
+                allAds.value = [];
+                activeTab.value = 'my';
+            };
+
+            const currentAds = computed(() => {
+                if (activeTab.value === 'my') return myAds.value;
+                return allAds.value;
+            });
+
+            onMounted(async () => {
+                if (token.value && userId.value) {
+                    await loadCategories();
+                    await loadMyAds();
+                    await loadAllAds();
+                } else {
+                    await loadCategories();
+                }
+            });
+
+            const openEditModal = (ad) => {
+                editForm.value = {
+                    id: ad.id,
+                    title: ad.title,
+                    description: ad.description || '',
+                    price: ad.price,
+                    categoryId: ad.categoryId
+                };
+                editingAd.value = true;
+            };
+
+            const updateAd = async () => {
+                const mutation = `
+                    mutation {
+                        updateAd(id: "${editForm.value.id}", input: {
+                            title: "${editForm.value.title.replace(/"/g, '\\"')}",
+                            description: "${editForm.value.description.replace(/"/g, '\\"')}",
+                            price: ${editForm.value.price},
+                            categoryId: "${editForm.value.categoryId}"
+                        }) {
+                            id title price
+                        }
+                    }
+                `;
+                try {
+                    await gqlRequest(mutation);
+                    alert('✅ Объявление обновлено');
+                    editingAd.value = null;
+                    await loadMyAds();
+                    await loadAllAds();
+                } catch(e) { alert('❌ Ошибка: ' + e.message); }
+            };
+
+            const confirmDelete = async (id) => {
+                if (!confirm('Удалить объявление?')) return;
+                const mutation = `mutation { deleteAd(id: "${id}") }`;
+                try {
+                    await gqlRequest(mutation);
+                    alert('✅ Объявление удалено');
+                    await loadMyAds();
+                    await loadAllAds();
+                } catch(e) { alert('❌ Ошибка: ' + e.message); }
+            };
+  
+            return {
+                token, userEmail, userId, showLogin, showRegister, activeTab, loading, myAds, allAds, selectedAd, categoriesList,
+                loginForm, registerForm, newAd,
+                login, register, logout, createAd, fetchAdDetails, currentAds,
+                editingAd, editForm,
+                openEditModal, updateAd, confirmDelete
+            };
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>

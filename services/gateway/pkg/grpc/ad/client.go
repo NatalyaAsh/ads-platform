@@ -97,3 +97,26 @@ func (c *Client) DeleteAd(ctx context.Context, id string) (*adv1.DeleteAdRespons
 	req := &adv1.DeleteAdRequest{Id: uint32(idUint)}
 	return c.client.DeleteAd(ctx, req)
 }
+
+// GetUserAds возвращает объявления пользователя
+func (c *Client) GetUserAds(ctx context.Context, userID string) ([]*adv1.Ad, error) {
+	idUint, err := strconv.ParseUint(userID, 10, 32)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user id: %w", err)
+	}
+	req := &adv1.GetUserAdsRequest{UserId: uint32(idUint)}
+	resp, err := c.client.GetUserAds(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Ads, nil
+}
+
+func (c *Client) ListAds(ctx context.Context, limit, offset int32) ([]*adv1.Ad, error) {
+	req := &adv1.ListAdsRequest{Limit: limit, Offset: offset}
+	resp, err := c.client.ListAds(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Ads, nil
+}

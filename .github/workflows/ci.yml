@@ -19,10 +19,14 @@ jobs:
         with:
           go-version: '1.26'
 
+      # - name: Test auth-user
+      #   run: |
+      #     cd services/auth-user
+      #     go test ./... -v
+
       - name: Test auth-user
-        run: |
-          cd services/auth-user
-          go test ./... -v
+        working-directory: services/auth-user
+        run: go test ./... -v          
 
       # - name: Test ad-search
       #   run: |

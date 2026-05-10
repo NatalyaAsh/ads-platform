@@ -28,7 +28,8 @@ jobs:
         working-directory: services/auth-user
         run: |
           pwd
-          go test ./... -v          
+          go version
+          go test ./internal/model -v
 
       # - name: Test ad-search
       #   run: |

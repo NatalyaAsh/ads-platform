@@ -29,7 +29,9 @@ jobs:
         run: |
           pwd
           go version
-          go test ./internal/model -v
+          run: cd services/auth-user && go test ./internal/model/...
+      #    go test ./internal/model -v
+
 
       # - name: Test ad-search
       #   run: |

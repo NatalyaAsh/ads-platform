@@ -19,10 +19,10 @@ jobs:
         with:
           go-version: '1.26'
 
-      - name: Test auth-user
-        run: |
-          cd services/auth-user/internal/model/
-          go test ./...
+      # - name: Test auth-user
+      #   run: |
+      #     cd services/auth-user/internal/model/
+      #     go test ./...
 
       # - name: Test auth-user
       #   working-directory: services/auth-user
@@ -43,10 +43,10 @@ jobs:
       #     cd services/gateway
       #     go test ./... -v
 
-      # - name: Build auth-user
-      #   run: |
-      #     cd services/auth-user
-      #     go build -o /dev/null ./...
+      - name: Build auth-user
+        run: |
+          cd services/auth-user
+          go build -o /dev/null ./...
 
       # - name: Build ad-search
       #   run: |

@@ -26,7 +26,9 @@ jobs:
 
       - name: Test auth-user
         working-directory: services/auth-user
-        run: go test ./... -v          
+        run: |
+          pwd
+          go test ./... -v          
 
       # - name: Test ad-search
       #   run: |

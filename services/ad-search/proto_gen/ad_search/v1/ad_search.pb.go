@@ -1286,6 +1286,355 @@ func (x *Category) GetSlug() string {
 	return ""
 }
 
+// ============ Load Image ============
+type UploadMediaRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AdId          uint32                 `protobuf:"varint,1,opt,name=ad_id,json=adId,proto3" json:"ad_id,omitempty"`
+	FileData      []byte                 `protobuf:"bytes,2,opt,name=file_data,json=fileData,proto3" json:"file_data,omitempty"`
+	FileName      string                 `protobuf:"bytes,3,opt,name=file_name,json=fileName,proto3" json:"file_name,omitempty"`
+	MimeType      string                 `protobuf:"bytes,4,opt,name=mime_type,json=mimeType,proto3" json:"mime_type,omitempty"`
+	IsPrimary     bool                   `protobuf:"varint,5,opt,name=is_primary,json=isPrimary,proto3" json:"is_primary,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UploadMediaRequest) Reset() {
+	*x = UploadMediaRequest{}
+	mi := &file_ad_search_v1_ad_search_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UploadMediaRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadMediaRequest) ProtoMessage() {}
+
+func (x *UploadMediaRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ad_search_v1_ad_search_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadMediaRequest.ProtoReflect.Descriptor instead.
+func (*UploadMediaRequest) Descriptor() ([]byte, []int) {
+	return file_ad_search_v1_ad_search_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *UploadMediaRequest) GetAdId() uint32 {
+	if x != nil {
+		return x.AdId
+	}
+	return 0
+}
+
+func (x *UploadMediaRequest) GetFileData() []byte {
+	if x != nil {
+		return x.FileData
+	}
+	return nil
+}
+
+func (x *UploadMediaRequest) GetFileName() string {
+	if x != nil {
+		return x.FileName
+	}
+	return ""
+}
+
+func (x *UploadMediaRequest) GetMimeType() string {
+	if x != nil {
+		return x.MimeType
+	}
+	return ""
+}
+
+func (x *UploadMediaRequest) GetIsPrimary() bool {
+	if x != nil {
+		return x.IsPrimary
+	}
+	return false
+}
+
+type UploadMediaResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	AdId          uint32                 `protobuf:"varint,2,opt,name=ad_id,json=adId,proto3" json:"ad_id,omitempty"`
+	Url           string                 `protobuf:"bytes,3,opt,name=url,proto3" json:"url,omitempty"`
+	FileName      string                 `protobuf:"bytes,4,opt,name=file_name,json=fileName,proto3" json:"file_name,omitempty"`
+	FileSize      int64                  `protobuf:"varint,5,opt,name=file_size,json=fileSize,proto3" json:"file_size,omitempty"`
+	MimeType      string                 `protobuf:"bytes,6,opt,name=mime_type,json=mimeType,proto3" json:"mime_type,omitempty"`
+	IsPrimary     bool                   `protobuf:"varint,7,opt,name=is_primary,json=isPrimary,proto3" json:"is_primary,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UploadMediaResponse) Reset() {
+	*x = UploadMediaResponse{}
+	mi := &file_ad_search_v1_ad_search_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UploadMediaResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadMediaResponse) ProtoMessage() {}
+
+func (x *UploadMediaResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ad_search_v1_ad_search_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadMediaResponse.ProtoReflect.Descriptor instead.
+func (*UploadMediaResponse) Descriptor() ([]byte, []int) {
+	return file_ad_search_v1_ad_search_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *UploadMediaResponse) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *UploadMediaResponse) GetAdId() uint32 {
+	if x != nil {
+		return x.AdId
+	}
+	return 0
+}
+
+func (x *UploadMediaResponse) GetUrl() string {
+	if x != nil {
+		return x.Url
+	}
+	return ""
+}
+
+func (x *UploadMediaResponse) GetFileName() string {
+	if x != nil {
+		return x.FileName
+	}
+	return ""
+}
+
+func (x *UploadMediaResponse) GetFileSize() int64 {
+	if x != nil {
+		return x.FileSize
+	}
+	return 0
+}
+
+func (x *UploadMediaResponse) GetMimeType() string {
+	if x != nil {
+		return x.MimeType
+	}
+	return ""
+}
+
+func (x *UploadMediaResponse) GetIsPrimary() bool {
+	if x != nil {
+		return x.IsPrimary
+	}
+	return false
+}
+
+type GetMediaRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AdId          uint32                 `protobuf:"varint,1,opt,name=ad_id,json=adId,proto3" json:"ad_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMediaRequest) Reset() {
+	*x = GetMediaRequest{}
+	mi := &file_ad_search_v1_ad_search_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMediaRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMediaRequest) ProtoMessage() {}
+
+func (x *GetMediaRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ad_search_v1_ad_search_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMediaRequest.ProtoReflect.Descriptor instead.
+func (*GetMediaRequest) Descriptor() ([]byte, []int) {
+	return file_ad_search_v1_ad_search_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *GetMediaRequest) GetAdId() uint32 {
+	if x != nil {
+		return x.AdId
+	}
+	return 0
+}
+
+type GetMediaResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Media         []*Media               `protobuf:"bytes,1,rep,name=media,proto3" json:"media,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMediaResponse) Reset() {
+	*x = GetMediaResponse{}
+	mi := &file_ad_search_v1_ad_search_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMediaResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMediaResponse) ProtoMessage() {}
+
+func (x *GetMediaResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ad_search_v1_ad_search_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMediaResponse.ProtoReflect.Descriptor instead.
+func (*GetMediaResponse) Descriptor() ([]byte, []int) {
+	return file_ad_search_v1_ad_search_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *GetMediaResponse) GetMedia() []*Media {
+	if x != nil {
+		return x.Media
+	}
+	return nil
+}
+
+type Media struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	AdId          uint32                 `protobuf:"varint,2,opt,name=ad_id,json=adId,proto3" json:"ad_id,omitempty"`
+	Url           string                 `protobuf:"bytes,3,opt,name=url,proto3" json:"url,omitempty"`
+	FileName      string                 `protobuf:"bytes,4,opt,name=file_name,json=fileName,proto3" json:"file_name,omitempty"`
+	FileSize      int64                  `protobuf:"varint,5,opt,name=file_size,json=fileSize,proto3" json:"file_size,omitempty"`
+	MimeType      string                 `protobuf:"bytes,6,opt,name=mime_type,json=mimeType,proto3" json:"mime_type,omitempty"`
+	IsPrimary     bool                   `protobuf:"varint,7,opt,name=is_primary,json=isPrimary,proto3" json:"is_primary,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Media) Reset() {
+	*x = Media{}
+	mi := &file_ad_search_v1_ad_search_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Media) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Media) ProtoMessage() {}
+
+func (x *Media) ProtoReflect() protoreflect.Message {
+	mi := &file_ad_search_v1_ad_search_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Media.ProtoReflect.Descriptor instead.
+func (*Media) Descriptor() ([]byte, []int) {
+	return file_ad_search_v1_ad_search_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *Media) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *Media) GetAdId() uint32 {
+	if x != nil {
+		return x.AdId
+	}
+	return 0
+}
+
+func (x *Media) GetUrl() string {
+	if x != nil {
+		return x.Url
+	}
+	return ""
+}
+
+func (x *Media) GetFileName() string {
+	if x != nil {
+		return x.FileName
+	}
+	return ""
+}
+
+func (x *Media) GetFileSize() int64 {
+	if x != nil {
+		return x.FileSize
+	}
+	return 0
+}
+
+func (x *Media) GetMimeType() string {
+	if x != nil {
+		return x.MimeType
+	}
+	return ""
+}
+
+func (x *Media) GetIsPrimary() bool {
+	if x != nil {
+		return x.IsPrimary
+	}
+	return false
+}
+
 var File_ad_search_v1_ad_search_proto protoreflect.FileDescriptor
 
 const file_ad_search_v1_ad_search_proto_rawDesc = "" +
@@ -1405,7 +1754,36 @@ const file_ad_search_v1_ad_search_proto_rawDesc = "" +
 	"\bCategory\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\rR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
-	"\x04slug\x18\x03 \x01(\tR\x04slug2\xfe\x04\n" +
+	"\x04slug\x18\x03 \x01(\tR\x04slug\"\x9f\x01\n" +
+	"\x12UploadMediaRequest\x12\x13\n" +
+	"\x05ad_id\x18\x01 \x01(\rR\x04adId\x12\x1b\n" +
+	"\tfile_data\x18\x02 \x01(\fR\bfileData\x12\x1b\n" +
+	"\tfile_name\x18\x03 \x01(\tR\bfileName\x12\x1b\n" +
+	"\tmime_type\x18\x04 \x01(\tR\bmimeType\x12\x1d\n" +
+	"\n" +
+	"is_primary\x18\x05 \x01(\bR\tisPrimary\"\xc2\x01\n" +
+	"\x13UploadMediaResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x13\n" +
+	"\x05ad_id\x18\x02 \x01(\rR\x04adId\x12\x10\n" +
+	"\x03url\x18\x03 \x01(\tR\x03url\x12\x1b\n" +
+	"\tfile_name\x18\x04 \x01(\tR\bfileName\x12\x1b\n" +
+	"\tfile_size\x18\x05 \x01(\x03R\bfileSize\x12\x1b\n" +
+	"\tmime_type\x18\x06 \x01(\tR\bmimeType\x12\x1d\n" +
+	"\n" +
+	"is_primary\x18\a \x01(\bR\tisPrimary\"&\n" +
+	"\x0fGetMediaRequest\x12\x13\n" +
+	"\x05ad_id\x18\x01 \x01(\rR\x04adId\"=\n" +
+	"\x10GetMediaResponse\x12)\n" +
+	"\x05media\x18\x01 \x03(\v2\x13.ad_search.v1.MediaR\x05media\"\xb4\x01\n" +
+	"\x05Media\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x13\n" +
+	"\x05ad_id\x18\x02 \x01(\rR\x04adId\x12\x10\n" +
+	"\x03url\x18\x03 \x01(\tR\x03url\x12\x1b\n" +
+	"\tfile_name\x18\x04 \x01(\tR\bfileName\x12\x1b\n" +
+	"\tfile_size\x18\x05 \x01(\x03R\bfileSize\x12\x1b\n" +
+	"\tmime_type\x18\x06 \x01(\tR\bmimeType\x12\x1d\n" +
+	"\n" +
+	"is_primary\x18\a \x01(\bR\tisPrimary2\x9d\x06\n" +
 	"\x0fAdSearchService\x12I\n" +
 	"\bCreateAd\x12\x1d.ad_search.v1.CreateAdRequest\x1a\x1e.ad_search.v1.CreateAdResponse\x12@\n" +
 	"\x05GetAd\x12\x1a.ad_search.v1.GetAdRequest\x1a\x1b.ad_search.v1.GetAdResponse\x12O\n" +
@@ -1415,7 +1793,9 @@ const file_ad_search_v1_ad_search_proto_rawDesc = "" +
 	"\bDeleteAd\x12\x1d.ad_search.v1.DeleteAdRequest\x1a\x1e.ad_search.v1.DeleteAdResponse\x12F\n" +
 	"\aListAds\x12\x1c.ad_search.v1.ListAdsRequest\x1a\x1d.ad_search.v1.ListAdsResponse\x12[\n" +
 	"\x0eListCategories\x12#.ad_search.v1.ListCategoriesRequest\x1a$.ad_search.v1.ListCategoriesResponse\x12R\n" +
-	"\vGetCategory\x12 .ad_search.v1.GetCategoryRequest\x1a!.ad_search.v1.GetCategoryResponseB>Z<github.com/NatalyaAsh/ads-platform/proto/gen/go/ad_search/v1b\x06proto3"
+	"\vGetCategory\x12 .ad_search.v1.GetCategoryRequest\x1a!.ad_search.v1.GetCategoryResponse\x12R\n" +
+	"\vUploadMedia\x12 .ad_search.v1.UploadMediaRequest\x1a!.ad_search.v1.UploadMediaResponse\x12I\n" +
+	"\bGetMedia\x12\x1d.ad_search.v1.GetMediaRequest\x1a\x1e.ad_search.v1.GetMediaResponseB>Z<github.com/NatalyaAsh/ads-platform/proto/gen/go/ad_search/v1b\x06proto3"
 
 var (
 	file_ad_search_v1_ad_search_proto_rawDescOnce sync.Once
@@ -1429,7 +1809,7 @@ func file_ad_search_v1_ad_search_proto_rawDescGZIP() []byte {
 	return file_ad_search_v1_ad_search_proto_rawDescData
 }
 
-var file_ad_search_v1_ad_search_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
+var file_ad_search_v1_ad_search_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
 var file_ad_search_v1_ad_search_proto_goTypes = []any{
 	(*CreateAdRequest)(nil),        // 0: ad_search.v1.CreateAdRequest
 	(*CreateAdResponse)(nil),       // 1: ad_search.v1.CreateAdResponse
@@ -1449,32 +1829,42 @@ var file_ad_search_v1_ad_search_proto_goTypes = []any{
 	(*GetCategoryResponse)(nil),    // 15: ad_search.v1.GetCategoryResponse
 	(*Ad)(nil),                     // 16: ad_search.v1.Ad
 	(*Category)(nil),               // 17: ad_search.v1.Category
+	(*UploadMediaRequest)(nil),     // 18: ad_search.v1.UploadMediaRequest
+	(*UploadMediaResponse)(nil),    // 19: ad_search.v1.UploadMediaResponse
+	(*GetMediaRequest)(nil),        // 20: ad_search.v1.GetMediaRequest
+	(*GetMediaResponse)(nil),       // 21: ad_search.v1.GetMediaResponse
+	(*Media)(nil),                  // 22: ad_search.v1.Media
 }
 var file_ad_search_v1_ad_search_proto_depIdxs = []int32{
 	16, // 0: ad_search.v1.GetUserAdsResponse.ads:type_name -> ad_search.v1.Ad
 	16, // 1: ad_search.v1.ListAdsResponse.ads:type_name -> ad_search.v1.Ad
 	17, // 2: ad_search.v1.ListCategoriesResponse.categories:type_name -> ad_search.v1.Category
-	0,  // 3: ad_search.v1.AdSearchService.CreateAd:input_type -> ad_search.v1.CreateAdRequest
-	2,  // 4: ad_search.v1.AdSearchService.GetAd:input_type -> ad_search.v1.GetAdRequest
-	4,  // 5: ad_search.v1.AdSearchService.GetUserAds:input_type -> ad_search.v1.GetUserAdsRequest
-	6,  // 6: ad_search.v1.AdSearchService.UpdateAd:input_type -> ad_search.v1.UpdateAdRequest
-	8,  // 7: ad_search.v1.AdSearchService.DeleteAd:input_type -> ad_search.v1.DeleteAdRequest
-	10, // 8: ad_search.v1.AdSearchService.ListAds:input_type -> ad_search.v1.ListAdsRequest
-	12, // 9: ad_search.v1.AdSearchService.ListCategories:input_type -> ad_search.v1.ListCategoriesRequest
-	14, // 10: ad_search.v1.AdSearchService.GetCategory:input_type -> ad_search.v1.GetCategoryRequest
-	1,  // 11: ad_search.v1.AdSearchService.CreateAd:output_type -> ad_search.v1.CreateAdResponse
-	3,  // 12: ad_search.v1.AdSearchService.GetAd:output_type -> ad_search.v1.GetAdResponse
-	5,  // 13: ad_search.v1.AdSearchService.GetUserAds:output_type -> ad_search.v1.GetUserAdsResponse
-	7,  // 14: ad_search.v1.AdSearchService.UpdateAd:output_type -> ad_search.v1.UpdateAdResponse
-	9,  // 15: ad_search.v1.AdSearchService.DeleteAd:output_type -> ad_search.v1.DeleteAdResponse
-	11, // 16: ad_search.v1.AdSearchService.ListAds:output_type -> ad_search.v1.ListAdsResponse
-	13, // 17: ad_search.v1.AdSearchService.ListCategories:output_type -> ad_search.v1.ListCategoriesResponse
-	15, // 18: ad_search.v1.AdSearchService.GetCategory:output_type -> ad_search.v1.GetCategoryResponse
-	11, // [11:19] is the sub-list for method output_type
-	3,  // [3:11] is the sub-list for method input_type
-	3,  // [3:3] is the sub-list for extension type_name
-	3,  // [3:3] is the sub-list for extension extendee
-	0,  // [0:3] is the sub-list for field type_name
+	22, // 3: ad_search.v1.GetMediaResponse.media:type_name -> ad_search.v1.Media
+	0,  // 4: ad_search.v1.AdSearchService.CreateAd:input_type -> ad_search.v1.CreateAdRequest
+	2,  // 5: ad_search.v1.AdSearchService.GetAd:input_type -> ad_search.v1.GetAdRequest
+	4,  // 6: ad_search.v1.AdSearchService.GetUserAds:input_type -> ad_search.v1.GetUserAdsRequest
+	6,  // 7: ad_search.v1.AdSearchService.UpdateAd:input_type -> ad_search.v1.UpdateAdRequest
+	8,  // 8: ad_search.v1.AdSearchService.DeleteAd:input_type -> ad_search.v1.DeleteAdRequest
+	10, // 9: ad_search.v1.AdSearchService.ListAds:input_type -> ad_search.v1.ListAdsRequest
+	12, // 10: ad_search.v1.AdSearchService.ListCategories:input_type -> ad_search.v1.ListCategoriesRequest
+	14, // 11: ad_search.v1.AdSearchService.GetCategory:input_type -> ad_search.v1.GetCategoryRequest
+	18, // 12: ad_search.v1.AdSearchService.UploadMedia:input_type -> ad_search.v1.UploadMediaRequest
+	20, // 13: ad_search.v1.AdSearchService.GetMedia:input_type -> ad_search.v1.GetMediaRequest
+	1,  // 14: ad_search.v1.AdSearchService.CreateAd:output_type -> ad_search.v1.CreateAdResponse
+	3,  // 15: ad_search.v1.AdSearchService.GetAd:output_type -> ad_search.v1.GetAdResponse
+	5,  // 16: ad_search.v1.AdSearchService.GetUserAds:output_type -> ad_search.v1.GetUserAdsResponse
+	7,  // 17: ad_search.v1.AdSearchService.UpdateAd:output_type -> ad_search.v1.UpdateAdResponse
+	9,  // 18: ad_search.v1.AdSearchService.DeleteAd:output_type -> ad_search.v1.DeleteAdResponse
+	11, // 19: ad_search.v1.AdSearchService.ListAds:output_type -> ad_search.v1.ListAdsResponse
+	13, // 20: ad_search.v1.AdSearchService.ListCategories:output_type -> ad_search.v1.ListCategoriesResponse
+	15, // 21: ad_search.v1.AdSearchService.GetCategory:output_type -> ad_search.v1.GetCategoryResponse
+	19, // 22: ad_search.v1.AdSearchService.UploadMedia:output_type -> ad_search.v1.UploadMediaResponse
+	21, // 23: ad_search.v1.AdSearchService.GetMedia:output_type -> ad_search.v1.GetMediaResponse
+	14, // [14:24] is the sub-list for method output_type
+	4,  // [4:14] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_ad_search_v1_ad_search_proto_init() }
@@ -1488,7 +1878,7 @@ func file_ad_search_v1_ad_search_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ad_search_v1_ad_search_proto_rawDesc), len(file_ad_search_v1_ad_search_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   18,
+			NumMessages:   23,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

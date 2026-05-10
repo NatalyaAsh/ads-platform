@@ -90,6 +90,11 @@
                     </select>
                 </div>
 
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-medium mb-1">Фото</label>
+                    <input type="file" @change="onFileSelected" accept="image/*" class="w-full p-2 border rounded-lg">
+                </div>
+
                 <button @click="createAd" class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition">
                     ➕ Опубликовать
                 </button>
@@ -101,6 +106,10 @@
                 <div v-else class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div v-for="ad in currentAds" :key="ad.id" class="bg-white rounded-lg shadow overflow-hidden">
                         <div class="p-4">
+                            <!-- <img :src="`http://localhost:8080/uploads/ad_${ad.id}/1_1778328455830548496.jpg`" 
+                                class="w-full h-32 object-cover rounded-t-lg" 
+                                onerror="this.style.display='none'"> -->
+                            <!-- <img v-if="ad.media && ad.media.length" :src="'http://localhost:8080' + ad.media[0].url" class="w-full h-32 object-cover rounded-t-lg"> -->
                             <h3 class="font-bold text-lg mb-2">{{ ad.title }}</h3>
                             <p class="text-gray-600 text-sm mb-2">{{ ad.description?.substring(0, 100) }}{{ ad.description?.length > 100 ? '...' : '' }}</p>
                             <div class="flex justify-between items-center mt-3">
@@ -172,8 +181,14 @@
             const loginForm = ref({ email: '', password: '' });
             const registerForm = ref({ email: '', password: '' });
             const newAd = ref({ title: '', description: '', price: 0, categoryId: '' });
+            const selectedFile = ref(null);
+            const onFileSelected = (event) => {
+                selectedFile.value = event.target.files[0];
+            };
 
             const GQL_URL = 'http://localhost:8080/graphql';
+
+            console.log('🔥 Скрипт работает!');
 
             const gqlRequest = async (query, variables = {}) => {
                 const headers = { 'Content-Type': 'application/json' };
@@ -184,7 +199,10 @@
                     body: JSON.stringify({ query, variables })
                 });
                 const json = await res.json();
-                if (json.errors) throw new Error(json.errors[0].message);
+                if (json.errors) {
+                    console.error('❌ GraphQL ошибка:', json.errors);
+                    throw new Error(json.errors[0].message);
+                }
                 return json.data;
             };
 
@@ -205,22 +223,87 @@
                 if (!userId.value) return;
                 loading.value = true;
                 try {
+                    //console.log('🔍 userId для loadMyAds:', userId.value);
+                    //const query = `{ userAds(userId: "${userId.value}") { id title description price status media { url } } }`;
                     const query = `{ userAds(userId: "${userId.value}") { id title description price status } }`;
+                    //console.log('📦 Ответ userAds:', data);
                     const data = await gqlRequest(query);
                     myAds.value = data.userAds || [];
                 } catch(e) { console.error(e); }
                 finally { loading.value = false; }
             };
 
+            // const loadMyAds = async () => {
+            //     console.log('🟢 loadMyAds вызвана, userId =', userId.value);
+            //     if (!userId.value) {
+            //         console.log('🔴 userId пуст, пропускаем');
+            //         return;
+            //     }
+
+            //     if (!userId.value) return;
+            //     loading.value = true;
+            //     try {
+            //         const query = `{ userAds(userId: "${userId.value}") { id title description price status } }`;
+            //         const data = await gqlRequest(query);
+            //         console.log('📦 data.userAds после запроса:', data);
+            //         const ads = data.userAds || [];
+            //         // const query = `{ userAds(userId: "${userId.value}") { id title description price status media { url } } }`;
+            //         // const data = await gqlRequest(query);
+            //         // console.log('📦 data.userAds после запроса:', data);
+            //         // myAds.value = data.userAds || [];
+
+            //         const adsWithMedia = await Promise.all(
+            //             ads.map(async (ad) => {
+            //                 const media = await fetchMediaForAd(ad.id);
+            //                 return { ...ad, media };
+            //             })
+            //         );
+            //         myAds.value = adsWithMedia;
+            //     } catch(e) {
+            //         console.error(e);
+            //     } finally {
+            //         loading.value = false;
+            //     }
+            // };
+
             const loadAllAds = async () => {
                 loading.value = true;
                 try {
+                    //const query = `{ ads(limit: 50) { id title description price status media { url } } }`;
                     const query = `{ ads(limit: 50) { id title description price status } }`;
                     const data = await gqlRequest(query);
+                    console.log('🔍 Ответ ads c media:', JSON.stringify(data.ads, null, 2));
                     allAds.value = data.ads || [];
                 } catch(e) { console.error(e); }
                 finally { loading.value = false; }
             };
+
+            // const loadAllAds = async () => {
+            //     console.log('🟢 loadAllAds вызвана');
+
+            //     loading.value = true;
+            //     try {
+            //         const query = `{ ads(limit: 50) { id title description price status } }`;
+            //         const data = await gqlRequest(query);
+            //         const ads = data.ads || [];
+            //         // const query = `{ ads(limit: 50) { id title description price status media { url } } }`;
+            //         // const data = await gqlRequest(query);
+            //         // allAds.value = data.ads || [];
+
+            //         // Подгружаем картинки для каждого объявления
+            //         const adsWithMedia = await Promise.all(
+            //             ads.map(async (ad) => {
+            //                 const media = await fetchMediaForAd(ad.id);
+            //                 return { ...ad, media };
+            //             })
+            //         );
+            //         allAds.value = adsWithMedia;
+            //     } catch(e) {
+            //         console.error(e);
+            //     } finally {
+            //         loading.value = false;
+            //     }
+            // };
 
             const fetchAdDetails = async (id) => {
                 const query = `{ ad(id: "${id}") { id title description price status views } }`;
@@ -230,11 +313,25 @@
                 } catch(e) { console.error(e); }
             };
 
+            // const fetchMediaForAd = async (adId) => {
+            //     const query = `{ media(adId: "${adId}") { url } }`;
+            //     try {
+            //         const data = await gqlRequest(query);
+            //         //console.log('🖼️ media для ad', ad.id, media);
+            //         console.log('🖼️ media для ad', adId, data.media);
+            //         return data.media || [];
+            //     } catch (e) {
+            //         return [];
+            //     }
+            // };            
+
             const createAd = async () => {
                 if (!newAd.value.title || !newAd.value.price || !newAd.value.categoryId) {
                     alert('Заполните название, цену и выберите категорию');
                     return;
                 }
+
+                // 1. Создаём объявление
                 const mutation = `
                     mutation {
                         createAd(input: {
@@ -243,17 +340,39 @@
                             price: ${newAd.value.price},
                             categoryId: "${newAd.value.categoryId}"
                         }) {
-                            id title price userId
+                            id title price
                         }
                     }
                 `;
                 try {
-                    await gqlRequest(mutation);
+                    const data = await gqlRequest(mutation);
+                    const adId = data.createAd.id;
+
+                    // 2. Если есть файл — загружаем
+                    if (selectedFile.value) {
+                        const formData = new FormData();
+                        formData.append('file', selectedFile.value);
+
+                        const uploadUrl = `http://localhost:8080/upload?adId=${adId}&isPrimary=true`;
+                        await fetch(uploadUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token.value}`
+                            },
+                            body: formData
+                        });
+                    }
+
                     alert('✅ Объявление создано!');
+                    // Сброс формы
                     newAd.value = { title: '', description: '', price: 0, categoryId: categoriesList.value[0]?.id || '' };
+                    selectedFile.value = null;
+                    // Обновить списки
                     await loadMyAds();
                     await loadAllAds();
-                } catch(e) { alert('❌ Ошибка: ' + e.message); }
+                } catch(e) {
+                    alert('❌ Ошибка: ' + e.message);
+                }
             };
 
             const login = async () => {
@@ -382,7 +501,9 @@
                 loginForm, registerForm, newAd,
                 login, register, logout, createAd, fetchAdDetails, currentAds,
                 editingAd, editForm,
-                openEditModal, updateAd, confirmDelete
+                openEditModal, updateAd, confirmDelete,
+                selectedFile,
+                onFileSelected,
             };
         }
     }).mount('#app');

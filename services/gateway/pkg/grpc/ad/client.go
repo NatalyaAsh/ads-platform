@@ -120,3 +120,23 @@ func (c *Client) ListAds(ctx context.Context, limit, offset int32) ([]*adv1.Ad, 
 	}
 	return resp.Ads, nil
 }
+
+// UploadMedia загружает изображение для объявления
+func (c *Client) UploadMedia(ctx context.Context, adID uint32, fileData []byte, fileName, mimeType string, isPrimary bool) (*adv1.UploadMediaResponse, error) {
+	req := &adv1.UploadMediaRequest{
+		AdId:      adID,
+		FileData:  fileData,
+		FileName:  fileName,
+		MimeType:  mimeType,
+		IsPrimary: isPrimary,
+	}
+	return c.client.UploadMedia(ctx, req)
+}
+
+func (c *Client) GetMedia(ctx context.Context, adID uint32) ([]*adv1.Media, error) {
+	resp, err := c.client.GetMedia(ctx, &adv1.GetMediaRequest{AdId: adID})
+	if err != nil {
+		return nil, err
+	}
+	return resp.Media, nil
+}

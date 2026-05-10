@@ -2,11 +2,14 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 
@@ -100,6 +103,13 @@ func main() {
 		},
 	})
 
+	// mediaType := graphql.NewObject(graphql.ObjectConfig{
+	// 	Name: "Media",
+	// 	Fields: graphql.Fields{
+	// 		"url": &graphql.Field{Type: graphql.String},
+	// 	},
+	// })
+
 	adType := graphql.NewObject(graphql.ObjectConfig{
 		Name: "Ad",
 		Fields: graphql.Fields{
@@ -125,6 +135,27 @@ func main() {
 					}, nil
 				},
 			},
+			// "media": &graphql.Field{
+			// 	Type: graphql.NewList(mediaType),
+			// 	Args: graphql.FieldConfigArgument{
+			// 		"adId": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.ID)},
+			// 	},
+			// 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+			// 		adID := p.Args["adId"].(string)
+			// 		idUint, _ := strconv.ParseUint(adID, 10, 32)
+			// 		media, err := adClient.GetMedia(context.Background(), uint32(idUint))
+			// 		if err != nil {
+			// 			return []interface{}{}, nil
+			// 		}
+			// 		result := []interface{}{}
+			// 		for _, m := range media {
+			// 			result = append(result, map[string]interface{}{
+			// 				"url": m.Url,
+			// 			})
+			// 		}
+			// 		return result, nil
+			// 	},
+			// },
 		},
 	})
 
@@ -393,10 +424,85 @@ func main() {
 		GraphiQL: true,
 	})
 
-	// // Применяем middleware для извлечения токена
-	// http.Handle("/graphql", withAuth(h))
+	// Раздаём папку uploads как статику (только для разработки)
+	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
+
+	// Применяем middleware для извлечения токена
 	// Оборачиваем в CORS и авторизацию
 	http.Handle("/graphql", corsMiddleware(withAuth(h)))
+
+	// ========== UPLOAD MEDIA ==========
+	http.Handle("/upload", corsMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		// Проверяем авторизацию
+		authHeader := r.Header.Get("Authorization")
+		token := ""
+		if authHeader != "" && strings.HasPrefix(authHeader, "Bearer ") {
+			token = strings.TrimPrefix(authHeader, "Bearer ")
+		}
+		if token == "" {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		// Валидируем токен (можно через authClient)
+		ctx := context.WithValue(r.Context(), "token", token)
+		_, err := getUserIDFromContext(ctx)
+		if err != nil {
+			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			return
+		}
+
+		// Парсим multipart форму (макс 10MB)
+		err = r.ParseMultipartForm(10 << 20)
+		if err != nil {
+			http.Error(w, "Failed to parse form", http.StatusBadRequest)
+			return
+		}
+
+		// Достаём файл
+		file, header, err := r.FormFile("file")
+		if err != nil {
+			http.Error(w, "Missing file", http.StatusBadRequest)
+			return
+		}
+		defer file.Close()
+
+		// Читаем данные файла
+		fileData, err := io.ReadAll(file)
+		if err != nil {
+			http.Error(w, "Failed to read file", http.StatusInternalServerError)
+			return
+		}
+
+		// Получаем adId из query параметра
+		adIDStr := r.URL.Query().Get("adId")
+		if adIDStr == "" {
+			http.Error(w, "adId is required", http.StatusBadRequest)
+			return
+		}
+		adID, err := strconv.ParseUint(adIDStr, 10, 32)
+		if err != nil {
+			http.Error(w, "Invalid adId", http.StatusBadRequest)
+			return
+		}
+
+		isPrimary := r.URL.Query().Get("isPrimary") == "true"
+
+		// Вызываем gRPC метод AdService
+		resp, err := adClient.UploadMedia(r.Context(), uint32(adID), fileData, header.Filename, header.Header.Get("Content-Type"), isPrimary)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resp)
+	})))
 
 	// Graceful shutdown
 	go func() {

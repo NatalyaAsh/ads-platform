@@ -8,7 +8,6 @@ package v1
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -28,6 +27,8 @@ const (
 	AdSearchService_ListAds_FullMethodName        = "/ad_search.v1.AdSearchService/ListAds"
 	AdSearchService_ListCategories_FullMethodName = "/ad_search.v1.AdSearchService/ListCategories"
 	AdSearchService_GetCategory_FullMethodName    = "/ad_search.v1.AdSearchService/GetCategory"
+	AdSearchService_UploadMedia_FullMethodName    = "/ad_search.v1.AdSearchService/UploadMedia"
+	AdSearchService_GetMedia_FullMethodName       = "/ad_search.v1.AdSearchService/GetMedia"
 )
 
 // AdSearchServiceClient is the client API for AdSearchService service.
@@ -44,6 +45,9 @@ type AdSearchServiceClient interface {
 	// Категории
 	ListCategories(ctx context.Context, in *ListCategoriesRequest, opts ...grpc.CallOption) (*ListCategoriesResponse, error)
 	GetCategory(ctx context.Context, in *GetCategoryRequest, opts ...grpc.CallOption) (*GetCategoryResponse, error)
+	// Медиа
+	UploadMedia(ctx context.Context, in *UploadMediaRequest, opts ...grpc.CallOption) (*UploadMediaResponse, error)
+	GetMedia(ctx context.Context, in *GetMediaRequest, opts ...grpc.CallOption) (*GetMediaResponse, error)
 }
 
 type adSearchServiceClient struct {
@@ -134,6 +138,26 @@ func (c *adSearchServiceClient) GetCategory(ctx context.Context, in *GetCategory
 	return out, nil
 }
 
+func (c *adSearchServiceClient) UploadMedia(ctx context.Context, in *UploadMediaRequest, opts ...grpc.CallOption) (*UploadMediaResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UploadMediaResponse)
+	err := c.cc.Invoke(ctx, AdSearchService_UploadMedia_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adSearchServiceClient) GetMedia(ctx context.Context, in *GetMediaRequest, opts ...grpc.CallOption) (*GetMediaResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetMediaResponse)
+	err := c.cc.Invoke(ctx, AdSearchService_GetMedia_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AdSearchServiceServer is the server API for AdSearchService service.
 // All implementations must embed UnimplementedAdSearchServiceServer
 // for forward compatibility.
@@ -148,6 +172,9 @@ type AdSearchServiceServer interface {
 	// Категории
 	ListCategories(context.Context, *ListCategoriesRequest) (*ListCategoriesResponse, error)
 	GetCategory(context.Context, *GetCategoryRequest) (*GetCategoryResponse, error)
+	// Медиа
+	UploadMedia(context.Context, *UploadMediaRequest) (*UploadMediaResponse, error)
+	GetMedia(context.Context, *GetMediaRequest) (*GetMediaResponse, error)
 	mustEmbedUnimplementedAdSearchServiceServer()
 }
 
@@ -181,6 +208,12 @@ func (UnimplementedAdSearchServiceServer) ListCategories(context.Context, *ListC
 }
 func (UnimplementedAdSearchServiceServer) GetCategory(context.Context, *GetCategoryRequest) (*GetCategoryResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetCategory not implemented")
+}
+func (UnimplementedAdSearchServiceServer) UploadMedia(context.Context, *UploadMediaRequest) (*UploadMediaResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UploadMedia not implemented")
+}
+func (UnimplementedAdSearchServiceServer) GetMedia(context.Context, *GetMediaRequest) (*GetMediaResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetMedia not implemented")
 }
 func (UnimplementedAdSearchServiceServer) mustEmbedUnimplementedAdSearchServiceServer() {}
 func (UnimplementedAdSearchServiceServer) testEmbeddedByValue()                         {}
@@ -347,6 +380,42 @@ func _AdSearchService_GetCategory_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdSearchService_UploadMedia_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UploadMediaRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdSearchServiceServer).UploadMedia(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdSearchService_UploadMedia_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdSearchServiceServer).UploadMedia(ctx, req.(*UploadMediaRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdSearchService_GetMedia_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMediaRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdSearchServiceServer).GetMedia(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdSearchService_GetMedia_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdSearchServiceServer).GetMedia(ctx, req.(*GetMediaRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AdSearchService_ServiceDesc is the grpc.ServiceDesc for AdSearchService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -385,6 +454,14 @@ var AdSearchService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetCategory",
 			Handler:    _AdSearchService_GetCategory_Handler,
+		},
+		{
+			MethodName: "UploadMedia",
+			Handler:    _AdSearchService_UploadMedia_Handler,
+		},
+		{
+			MethodName: "GetMedia",
+			Handler:    _AdSearchService_GetMedia_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

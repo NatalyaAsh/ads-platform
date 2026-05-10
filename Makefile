@@ -12,6 +12,7 @@ help:
 	@echo "🚀 Запуск сервисов:"
 	@echo "  make run-auth        - Запустить auth-user сервис"
 	@echo "  make run-ad          - Запустить ad-search сервис"
+	@echo "  make run-gateway     - Запустить GraphQL Gateway"
 	@echo "  make run-all         - Запустить базы + сервисы"
 	@echo ""
 	@echo "🧪 Тестирование:"
@@ -95,6 +96,11 @@ run-ad:
 	@echo "🚀 Запуск ad-search сервиса..."
 	cd services/ad-search && go run cmd/main.go
 
+.PHONY: test-ad
+test-ad:
+	@echo "🧪 Запуск тестов ad-search..."
+	cd services/ad-search && go test ./... -v	
+
 # ========== BOTH SERVICES ==========
 
 .PHONY: run-all
@@ -103,6 +109,7 @@ run-all: up
 	@echo "Теперь можно запускать сервисы:"
 	@echo "  make run-auth"
 	@echo "  make run-ad"
+	@echo "  make run-gateway"
 
 # ========== PROTO ==========
 
@@ -127,3 +134,15 @@ vet:
 	@echo "🔍 Запуск go vet..."
 	cd services/auth-user && go vet ./...
 	cd services/ad-search && go vet ./...
+
+# ========== GATEWAY SERVICE ==========
+
+.PHONY: run-gateway
+run-gateway:
+	@echo "🌐 Запуск GraphQL Gateway..."
+	cd services/gateway && go run cmd/server.go	
+
+.PHONY: test-gateway
+test-gateway:
+	@echo "🧪 Запуск тестов gateway..."
+	cd services/gateway && go test ./... -v	

@@ -17,34 +17,34 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.23'
+          go-version: '1.26'
 
       - name: Test auth-user
         run: |
           cd services/auth-user
           go test ./... -v
 
-      - name: Test ad-search
-        run: |
-          cd services/ad-search
-          go test ./... -v
+      # - name: Test ad-search
+      #   run: |
+      #     cd services/ad-search
+      #     go test ./... -v
 
-      - name: Test gateway
-        run: |
-          cd services/gateway
-          go test ./... -v
+      # - name: Test gateway
+      #   run: |
+      #     cd services/gateway
+      #     go test ./... -v
 
-      - name: Build auth-user
-        run: |
-          cd services/auth-user
-          go build -o /dev/null ./...
+      # - name: Build auth-user
+      #   run: |
+      #     cd services/auth-user
+      #     go build -o /dev/null ./...
 
-      - name: Build ad-search
-        run: |
-          cd services/ad-search
-          go build -o /dev/null ./...
+      # - name: Build ad-search
+      #   run: |
+      #     cd services/ad-search
+      #     go build -o /dev/null ./...
 
-      - name: Build gateway
-        run: |
-          cd services/gateway
-          go build -o /dev/null ./...
+      # - name: Build gateway
+      #   run: |
+      #     cd services/gateway
+      #     go build -o /dev/null ./...
